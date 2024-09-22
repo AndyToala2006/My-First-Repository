@@ -21,7 +21,7 @@ def main():
     monto_final2 = monto2 - descuento2
     print(f"\nSegunda compra:")
     print(f"Monto total: ${monto2:.2f}")
-    print(f"Descuento aplicado ({porcentaje2}%): ${descuento2:.2f}")
+    print(f"Descuento Aplicado ({porcentaje2}%): ${descuento2:.2f}")
     print(f"Monto final a pagar: ${monto_final2:.2f}")
 
 # Ejecutar el programa principal
