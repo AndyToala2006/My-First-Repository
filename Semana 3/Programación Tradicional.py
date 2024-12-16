@@ -6,7 +6,7 @@ def obtener_temperaturas():
         temperaturas.append(temperatura)
     return temperaturas
 
-# Función para calcular el promedio de las temperaturas
+# Funcion para calcular el promedio de las temperaturas
 def calcular_promedio(temperaturas):
     return sum(temperaturas) / len(temperaturas)
 

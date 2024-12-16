@@ -3,7 +3,7 @@ class ClimaDiario:
         self.dia = dia
         self.temperatura = temperatura
 
-    # Método para mostrar información del clima
+    # Metodo para mostrar información del clima
     def mostrar_informacion(self):
         print(f"El clima del día {self.dia} fue de {self.temperatura}°C.")
 
@@ -12,16 +12,16 @@ class PromedioClima:
     def __init__(self):
         self.dias = []
 
-    # Método para agregar un clima diario
+    # Metodo para agregar un clima diario
     def agregar_clima(self, clima):
         self.dias.append(clima)
 
-    # Método para calcular el promedio de temperaturas
+    # Metodo para calcular el promedio de temperaturas
     def calcular_promedio(self):
         total_temperaturas = sum(clima.temperatura for clima in self.dias)
         return total_temperaturas / len(self.dias)
 
-    # Método para mostrar la información de todos los días
+    # Metodo para mostrar la información de todos los días
     def mostrar_informacion(self):
         for clima in self.dias:
             clima.mostrar_informacion()
