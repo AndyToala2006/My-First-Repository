@@ -1,0 +1,1 @@
+[{"id_producto": "01", "nombre": "Basta (Lts)", "cantidad": 100, "precio": 22.0}, {"id_producto": "02", "nombre": "Glifosato (Lts)", "cantidad": 40, "precio": 10.0}]
