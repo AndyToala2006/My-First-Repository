@@ -1,0 +1,45 @@
+import java.util.HashSet;
+import java.util.Set;
+
+public class CampañaVacunacionCOVID {
+
+    public static void main(String[] args) {
+        // Crear conjunto de 500 ciudadanos
+        Set<String> ciudadanos = new HashSet<>();
+        for (int i = 1; i <= 500; i++) {
+            ciudadanos.add("Ciudadano " + i);
+        }
+
+        // Crear conjuntos ficticios de vacunados con Pfizer y AstraZeneca (75 cada uno)
+        Set<String> pfizer = new HashSet<>();
+        Set<String> astraZeneca = new HashSet<>();
+
+        for (int i = 1; i <= 75; i++) {
+            pfizer.add("Ciudadano " + i);
+            astraZeneca.add("Ciudadano " + (i + 50)); // se superponen algunos ciudadanos
+        }
+
+        // Ciudadanos que han recibido ambas dosis (intersección)
+        Set<String> ambasDosis = new HashSet<>(pfizer);
+        ambasDosis.retainAll(astraZeneca);
+
+        // Ciudadanos que solo han recibido Pfizer
+        Set<String> soloPfizer = new HashSet<>(pfizer);
+        soloPfizer.removeAll(astraZeneca);
+
+        // Ciudadanos que solo han recibido AstraZeneca
+        Set<String> soloAstraZeneca = new HashSet<>(astraZeneca);
+        soloAstraZeneca.removeAll(pfizer);
+
+        // Ciudadanos que no se han vacunado
+        Set<String> noVacunados = new HashSet<>(ciudadanos);
+        noVacunados.removeAll(pfizer);
+        noVacunados.removeAll(astraZeneca);
+
+        // Mostrar resultados
+        System.out.println("Ciudadanos que no se han vacunado: " + noVacunados.size());
+        System.out.println("Ciudadanos que han recibido ambas dosis: " + ambasDosis.size());
+        System.out.println("Ciudadanos que solo han recibido Pfizer: " + soloPfizer.size());
+        System.out.println("Ciudadanos que solo han recibido AstraZeneca: " + soloAstraZeneca.size());
+    }
+}
