@@ -1,0 +1,121 @@
+using System;
+using System.Collections.Generic;
+
+namespace TorneoFutbol
+{
+    class Program
+    {
+        static Dictionary<string, HashSet<string>> equipos = new Dictionary<string, HashSet<string>>();
+
+        static void Main(string[] args)
+        {
+            Menu();
+        }
+
+        static void Menu()
+        {
+            while (true)
+            {
+                Console.WriteLine("\n--- Menú Torneo de Fútbol ---");
+                Console.WriteLine("1. Agregar equipo");
+                Console.WriteLine("2. Agregar jugador");
+                Console.WriteLine("3. Mostrar jugadores de un equipo");
+                Console.WriteLine("4. Mostrar todos los equipos");
+                Console.WriteLine("5. Salir");
+                Console.Write("Seleccione una opción: ");
+                string opcion = Console.ReadLine();
+
+                switch (opcion)
+                {
+                    case "1":
+                        Console.Write("Nombre del equipo: ");
+                        string equipo = Console.ReadLine();
+                        AgregarEquipo(equipo);
+                        break;
+                    case "2":
+                        Console.Write("Nombre del equipo: ");
+                        equipo = Console.ReadLine();
+                        Console.Write("Nombre del jugador: ");
+                        string jugador = Console.ReadLine();
+                        AgregarJugador(equipo, jugador);
+                        break;
+                    case "3":
+                        Console.Write("Nombre del equipo: ");
+                        equipo = Console.ReadLine();
+                        MostrarJugadores(equipo);
+                        break;
+                    case "4":
+                        MostrarEquipos();
+                        break;
+                    case "5":
+                        Console.WriteLine("Saliendo del programa...");
+                        return;
+                    default:
+                        Console.WriteLine("Opción inválida. Intente de nuevo.");
+                        break;
+                }
+            }
+        }
+
+        static void AgregarEquipo(string nombreEquipo)
+        {
+            if (!equipos.ContainsKey(nombreEquipo))
+            {
+                equipos[nombreEquipo] = new HashSet<string>();
+                Console.WriteLine($"Equipo '{nombreEquipo}' agregado correctamente.");
+            }
+            else
+            {
+                Console.WriteLine($"El equipo '{nombreEquipo}' ya existe.");
+            }
+        }
+
+        static void AgregarJugador(string nombreEquipo, string nombreJugador)
+        {
+            if (equipos.ContainsKey(nombreEquipo))
+            {
+                equipos[nombreEquipo].Add(nombreJugador);
+                Console.WriteLine($"Jugador '{nombreJugador}' agregado al equipo '{nombreEquipo}'.");
+            }
+            else
+            {
+                Console.WriteLine($"El equipo '{nombreEquipo}' no existe.");
+            }
+        }
+
+        static void MostrarJugadores(string nombreEquipo)
+        {
+            if (equipos.ContainsKey(nombreEquipo))
+            {
+                HashSet<string> jugadores = equipos[nombreEquipo];
+                if (jugadores.Count > 0)
+                {
+                    Console.WriteLine($"Jugadores del equipo '{nombreEquipo}': {string.Join(", ", jugadores)}");
+                }
+                else
+                {
+                    Console.WriteLine($"El equipo '{nombreEquipo}' no tiene jugadores registrados.");
+                }
+            }
+            else
+            {
+                Console.WriteLine($"El equipo '{nombreEquipo}' no existe.");
+            }
+        }
+
+        static void MostrarEquipos()
+        {
+            if (equipos.Count > 0)
+            {
+                foreach (var equipo in equipos)
+                {
+                    Console.WriteLine($"Equipo: {equipo.Key} | Jugadores: {equipo.Value.Count}");
+                }
+            }
+            else
+            {
+                Console.WriteLine("No hay equipos registrados.");
+            }
+        }
+    }
+}

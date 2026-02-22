@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Lista Dinámica de Productos</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f6f8;
+            padding: 40px;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        .contenedor {
+            max-width: 600px;
+            margin: auto;
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        li {
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        li:last-child {
+            border-bottom: none;
+        }
+
+        .precio {
+            color: #2c7be5;
+            font-weight: bold;
+        }
+
+        button {
+            margin-top: 15px;
+            width: 100%;
+            padding: 10px;
+            background-color: #2c7be5;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #1a5dcc;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="contenedor">
+        <h1>Lista de Productos</h1>
+        <ul id="lista-productos"></ul>
+        <button id="btn-agregar">Agregar Producto</button>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
