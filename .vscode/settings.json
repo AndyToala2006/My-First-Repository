@@ -1,0 +1,7 @@
+﻿{
+  "python.defaultInterpreterPath": "${workspaceFolder}\\Sistema_Turnos_Flask\\venv\\Scripts\\python.exe",
+  "python.terminal.activateEnvironment": true,
+  "python.analysis.extraPaths": [
+    "${workspaceFolder}\\Sistema_Turnos_Flask"
+  ]
+}

@@ -1,16 +1,11 @@
-# Archivos del entorno virtual
-venv/
+﻿venv/
 .env
-
-# Archivos de Python compilados
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
-
-# Archivos del sistema
+.vscode/
 .DS_Store
 Thumbs.db
-
-# Archivos de VS Code
-.vscode/
+*.sqlite3
+inventario.db

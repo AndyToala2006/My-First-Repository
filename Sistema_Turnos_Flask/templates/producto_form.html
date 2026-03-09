@@ -1,0 +1,38 @@
+﻿{% extends "base.html" %}
+
+{% block content %}
+<section class="panel form-panel">
+    <h2>{{ accion }} factura de exportación</h2>
+    <form method="post" class="form-grid">
+        <label for="cliente">Cliente</label>
+        <input id="cliente" name="cliente" type="text" value="{{ form.cliente }}" required>
+
+        <label for="ruc">RUC</label>
+        <input id="ruc" name="ruc" type="text" value="{{ form.ruc }}" required>
+
+        <label for="destino">Destino</label>
+        <input id="destino" name="destino" type="text" value="{{ form.destino }}" required>
+
+        <label for="producto">Producto</label>
+        <input id="producto" name="producto" type="text" value="{{ form.producto }}" required>
+
+        <label for="cantidad_cajas">Cantidad de cajas</label>
+        <input id="cantidad_cajas" name="cantidad_cajas" type="number" min="1" value="{{ form.cantidad_cajas }}" required>
+
+        <label for="precio_caja">Precio por caja</label>
+        <input id="precio_caja" name="precio_caja" type="number" min="0.01" step="0.01" value="{{ form.precio_caja }}" required>
+
+        <label for="estado">Estado</label>
+        <select id="estado" name="estado">
+            <option value="Emitida" {% if form.estado == 'Emitida' %}selected{% endif %}>Emitida</option>
+            <option value="Pagada" {% if form.estado == 'Pagada' %}selected{% endif %}>Pagada</option>
+            <option value="Pendiente" {% if form.estado == 'Pendiente' %}selected{% endif %}>Pendiente</option>
+        </select>
+
+        <div class="actions">
+            <button type="submit">{{ accion }}</button>
+            <a href="{{ url_for('facturas') }}">Cancelar</a>
+        </div>
+    </form>
+</section>
+{% endblock %}

@@ -1,0 +1,69 @@
+﻿{% extends "base.html" %}
+
+{% block content %}
+<section class="panel form-panel">
+    <h2>Persistencia de operaciones (TXT, JSON, CSV)</h2>
+    <form method="post" class="form-grid">
+        <label for="fecha">Fecha</label>
+        <input id="fecha" name="fecha" type="date" value="{{ form.fecha }}" required>
+
+        <label for="numero_factura">Número de factura</label>
+        <input id="numero_factura" name="numero_factura" type="text" value="{{ form.numero_factura }}" required>
+
+        <label for="cliente">Cliente</label>
+        <input id="cliente" name="cliente" type="text" value="{{ form.cliente }}" required>
+
+        <label for="destino">Destino</label>
+        <input id="destino" name="destino" type="text" value="{{ form.destino }}" required>
+
+        <label for="total">Total</label>
+        <input id="total" name="total" type="number" min="0.01" step="0.01" value="{{ form.total }}" required>
+
+        <label for="formato">Formato de almacenamiento</label>
+        <select id="formato" name="formato">
+            <option value="txt" {% if form.formato == 'txt' %}selected{% endif %}>TXT</option>
+            <option value="json" {% if form.formato == 'json' %}selected{% endif %}>JSON</option>
+            <option value="csv" {% if form.formato == 'csv' %}selected{% endif %}>CSV</option>
+        </select>
+
+        <button type="submit">Guardar registro</button>
+    </form>
+</section>
+
+<section class="panel">
+    <h3>Lectura desde TXT</h3>
+    <ul>
+        {% for item in datos_txt %}
+        <li>{{ item }}</li>
+        {% else %}
+        <li>Sin registros TXT.</li>
+        {% endfor %}
+    </ul>
+
+    <h3>Lectura desde JSON</h3>
+    <ul>
+        {% for item in datos_json %}
+        <li>{{ item.fecha }} | {{ item.numero_factura }} | {{ item.cliente }} | {{ item.destino }} | ${{ item.total }}</li>
+        {% else %}
+        <li>Sin registros JSON.</li>
+        {% endfor %}
+    </ul>
+
+    <h3>Lectura desde CSV</h3>
+    <ul>
+        {% for item in datos_csv %}
+        <li>{{ item.fecha }} | {{ item.numero_factura }} | {{ item.cliente }} | {{ item.destino }} | ${{ item.total }}</li>
+        {% else %}
+        <li>Sin registros CSV.</li>
+        {% endfor %}
+    </ul>
+</section>
+
+<section class="panel">
+    <h3>Resumen POO + colecciones</h3>
+    <p>Total de facturas en memoria: {{ resumen_memoria.total_facturas }}</p>
+    <p>IDs registrados (set): {{ resumen_memoria.ids }}</p>
+    <p>IDs como tupla: {{ resumen_memoria.ids_como_tupla }}</p>
+    <p>Última acción (lista de tuplas): {{ resumen_memoria.ultima_accion }}</p>
+</section>
+{% endblock %}

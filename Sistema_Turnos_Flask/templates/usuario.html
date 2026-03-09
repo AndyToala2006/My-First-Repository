@@ -1,6 +1,8 @@
-{% extends "base.html" %}
+﻿{% extends "base.html" %}
 
 {% block content %}
-<h2>Bienvenido, {{ nombre }}</h2>
-<p>Tu turno está siendo procesado. Pronto recibirás tu cita confirmada.</p>
+<section class="panel">
+    <h2>Cliente: {{ nombre }}</h2>
+    <p>{{ mensaje }}</p>
+</section>
 {% endblock %}

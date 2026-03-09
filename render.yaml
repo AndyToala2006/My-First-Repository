@@ -1,0 +1,14 @@
+﻿services:
+  - type: web
+    name: litobanano-facturacion
+    runtime: python
+    rootDir: Sistema_Turnos_Flask
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
+    autoDeploy: true
+    healthCheckPath: /
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: SECRET_KEY
+        generateValue: true
