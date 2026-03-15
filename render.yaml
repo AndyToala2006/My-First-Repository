@@ -2,7 +2,7 @@
   - type: web
     name: litobanano-facturacion
     runtime: python
-    rootDir: Sistema_Turnos_Flask
+    rootDir: Sistema_Facturacion_Flask
     buildCommand: pip install -r requirements.txt
     startCommand: gunicorn app:app --bind 0.0.0.0:$PORT
     autoDeploy: true
