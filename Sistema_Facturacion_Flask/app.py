@@ -4,8 +4,7 @@ import io
 import csv
 import json
 import os
-from datetime import date
-from pathlib import Path
+from datetime import date\n\nfrom dotenv import load_dotenv\nfrom pathlib import Path
 
 from flask import Flask, flash, redirect, render_template, request, url_for, send_file
 from flask_login import LoginManager, login_required, login_user, logout_user, current_user
@@ -31,7 +30,7 @@ from services.user_service import create_user, get_user_by_id, get_user_by_email
 from services.producto_service import list_productos, get_producto, create_producto, update_producto, delete_producto
 from services.report_service import productos_pdf
 
-BASE_DIR = Path(__file__).resolve().parent
+load_dotenv()\n\nBASE_DIR = Path(__file__).resolve().parent
 DATA_DIR = BASE_DIR / "inventario" / "data"
 TXT_PATH = DATA_DIR / "datos.txt"
 JSON_PATH = DATA_DIR / "datos.json"
@@ -842,6 +841,7 @@ def mysql_factura_eliminar(factura_id: int):
 
 if __name__ == "__main__":
     app.run(debug=True)
+
 
 
 
