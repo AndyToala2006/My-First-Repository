@@ -1,13 +1,25 @@
 ﻿{% extends "base.html" %}
 
 {% block content %}
+<section class="panel">
+    <div class="panel-head">
+        <div>
+            <h2>Estado operativo</h2>
+            <p class="muted">Resumen en tiempo real de facturación, logística y cartera activa.</p>
+        </div>
+        <div>
+            <a class="btn" href="{{ url_for('factura_nueva') }}">Emitir factura</a>
+        </div>
+    </div>
+</section>
+
 <section class="cards">
     <article class="card">
         <h3>Facturas emitidas</h3>
         <p class="metric">{{ total_facturas }}</p>
     </article>
     <article class="card">
-        <h3>Cajas facturadas</h3>
+        <h3>Cajas exportadas</h3>
         <p class="metric">{{ total_cajas }}</p>
     </article>
     <article class="card">
@@ -16,8 +28,26 @@
     </article>
 </section>
 
+<section class="kpi-row">
+    <div class="kpi">
+        <span class="muted">Cumplimiento de despachos</span>
+        <strong>98.6%</strong>
+    </div>
+    <div class="kpi">
+        <span class="muted">Clientes activos</span>
+        <strong>24</strong>
+    </div>
+    <div class="kpi">
+        <span class="muted">Rutas internacionales</span>
+        <strong>9</strong>
+    </div>
+</section>
+
 <section class="panel">
-    <h2>Últimas facturas registradas</h2>
+    <div class="panel-head">
+        <h2>Últimas facturas registradas</h2>
+        <a class="btn" href="{{ url_for('facturas') }}">Ver todas</a>
+    </div>
     <table>
         <thead>
             <tr>
@@ -46,5 +76,28 @@
             {% endfor %}
         </tbody>
     </table>
+</section>
+
+<section class="panel">
+    <div class="panel-head">
+        <h2>Accesos rápidos</h2>
+    </div>
+    <div class="kpi-row">
+        <div class="kpi">
+            <span class="muted">Gestión de productos</span>
+            <strong>Inventario MySQL</strong>
+            <a class="btn" href="{{ url_for('productos_list') }}">Administrar</a>
+        </div>
+        <div class="kpi">
+            <span class="muted">Usuarios corporativos</span>
+            <strong>Control de acceso</strong>
+            <a class="btn" href="{{ url_for('mysql_usuarios') }}">Gestionar</a>
+        </div>
+        <div class="kpi">
+            <span class="muted">Reporte financiero</span>
+            <strong>PDF Productos</strong>
+            <a class="btn" href="{{ url_for('reporte_productos_pdf') }}">Descargar</a>
+        </div>
+    </div>
 </section>
 {% endblock %}

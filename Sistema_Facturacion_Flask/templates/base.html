@@ -8,49 +8,60 @@
 </head>
 <body>
     <div class="page-bg"></div>
-    <header class="site-header">
-        <div>
-            <p class="badge">Litobanano S.A.</p>
-            <h1>Sistema Integral de Facturación y Exportación</h1>
-            <p>Productora y exportadora de banano con control administrativo centralizado.</p>
+    <div class="wrapper">
+        <header class="site-header">
+            <div>
+                <p class="badge">Litobanano S.A.</p>
+                <h1>Plataforma Empresarial de Facturación y Exportación</h1>
+                <p>Control financiero, operaciones y logística de exportación en un solo panel.</p>
+            </div>
+        </header>
+
+        <div class="topbar">
+            <div class="brand-mark">LB</div>
+            <div>
+                <strong>Centro de Operaciones</strong>
+                <div class="muted">Gestión integral de clientes, productos y facturas</div>
+            </div>
+            <div class="nav-links">
+                <a href="{{ url_for('index') }}">Panel</a>
+                <a href="{{ url_for('facturas') }}">Facturas SQLite</a>
+                <a href="{{ url_for('factura_nueva') }}">Nueva factura</a>
+                <a href="{{ url_for('productos_list') }}">Productos MySQL</a>
+                <a href="{{ url_for('mysql_usuarios') }}">Usuarios MySQL</a>
+                <a href="{{ url_for('mysql_facturas') }}">Facturas MySQL</a>
+                <a href="{{ url_for('datos') }}">Persistencia</a>
+                <a href="{{ url_for('reporte_productos_pdf') }}">Reporte PDF</a>
+                <a href="{{ url_for('about') }}">Acerca de</a>
+                <a href="{{ url_for('contactos') }}">Contacto</a>
+            </div>
+            <div class="nav-user">
+                {% if current_user.is_authenticated %}
+                    <span>{{ current_user.nombre }}</span>
+                    <a href="{{ url_for('logout') }}">Salir</a>
+                {% else %}
+                    <a href="{{ url_for('login') }}">Login</a>
+                {% endif %}
+            </div>
         </div>
-    </header>
 
-    <nav class="site-nav">
-        <a href="{{ url_for('index') }}">Panel</a>
-        <a href="{{ url_for('facturas') }}">Facturas SQLite</a>
-        <a href="{{ url_for('factura_nueva') }}">Nueva factura</a>
-        <a href="{{ url_for('productos_list') }}">Productos MySQL</a>
-        <a href="{{ url_for('mysql_usuarios') }}">Usuarios MySQL</a>
-        <a href="{{ url_for('mysql_facturas') }}">Facturas MySQL</a>
-        <a href="{{ url_for('datos') }}">Persistencia</a>
-        <a href="{{ url_for('reporte_productos_pdf') }}">Reporte PDF</a>
-        <a href="{{ url_for('about') }}">Acerca de</a>
-        <a href="{{ url_for('contactos') }}">Contacto</a>
-        {% if current_user.is_authenticated %}
-            <span class="nav-user">{{ current_user.nombre }}</span>
-            <a href="{{ url_for('logout') }}">Salir</a>
-        {% else %}
-            <a href="{{ url_for('login') }}">Login</a>
-        {% endif %}
-    </nav>
+        <main class="container">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <section class="alerts">
+                        {% for category, message in messages %}
+                            <p class="flash {{ category }}">{{ message }}</p>
+                        {% endfor %}
+                    </section>
+                {% endif %}
+            {% endwith %}
 
-    <main class="container">
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                <section class="alerts">
-                    {% for category, message in messages %}
-                        <p class="flash {{ category }}">{{ message }}</p>
-                    {% endfor %}
-                </section>
-            {% endif %}
-        {% endwith %}
+            {% block content %}{% endblock %}
+        </main>
 
-        {% block content %}{% endblock %}
-    </main>
-
-    <footer class="site-footer">
-        <p>© 2026 Litobanano S.A. | Plataforma académica DAW lista para despliegue</p>
-    </footer>
+        <footer class="site-footer">
+            <p>© 2026 Litobanano S.A. | Sistema empresarial operativo listo para auditoría y control</p>
+        </footer>
+    </div>
 </body>
 </html>
