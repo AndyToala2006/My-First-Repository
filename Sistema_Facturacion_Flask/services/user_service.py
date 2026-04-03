@@ -4,7 +4,7 @@ from typing import Iterable
 
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from Conexión.conexion import get_connection
+from Conexión.conexion import get_connection, usuarios_has_mail_column
 from models.user import User
 
 
@@ -52,10 +52,16 @@ def create_user(nombre: str, email: str, password: str) -> User:
     password_hash = generate_password_hash(password)
     conn = get_connection()
     cursor = conn.cursor()
-    cursor.execute(
-        "INSERT INTO usuarios (nombre, email, password) VALUES (%s, %s, %s)",
-        (nombre, email, password_hash),
-    )
+    if usuarios_has_mail_column():
+        cursor.execute(
+            "INSERT INTO usuarios (nombre, email, mail, password) VALUES (%s, %s, %s, %s)",
+            (nombre, email, email, password_hash),
+        )
+    else:
+        cursor.execute(
+            "INSERT INTO usuarios (nombre, email, password) VALUES (%s, %s, %s)",
+            (nombre, email, password_hash),
+        )
     conn.commit()
     user_id = cursor.lastrowid
     cursor.close()

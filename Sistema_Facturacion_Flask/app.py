@@ -23,6 +23,7 @@ from Conexión.conexion import (
     ensure_productos_columns,
     ensure_detalle_columns,
     ensure_usuarios_columns,
+    usuarios_has_mail_column,
 )
 from forms.auth_forms import LoginForm, RegisterForm, ProductoForm
 from form import FacturaForm, RegistroOperacionForm
@@ -542,10 +543,16 @@ def mysql_usuario_nuevo():
             flash("Todos los campos son obligatorios.", "error")
         else:
             password_hash = generate_password_hash(password)
-            _mysql_execute(
-                "INSERT INTO usuarios (nombre, email, password) VALUES (%s, %s, %s)",
-                (nombre, email, password_hash),
-            )
+            if usuarios_has_mail_column():
+                _mysql_execute(
+                    "INSERT INTO usuarios (nombre, email, mail, password) VALUES (%s, %s, %s, %s)",
+                    (nombre, email, email, password_hash),
+                )
+            else:
+                _mysql_execute(
+                    "INSERT INTO usuarios (nombre, email, password) VALUES (%s, %s, %s)",
+                    (nombre, email, password_hash),
+                )
             flash("Usuario creado en MySQL.", "ok")
             return redirect(url_for("mysql_usuarios"))
 
@@ -575,10 +582,16 @@ def mysql_usuario_editar(usuario_id: int):
             flash("Todos los campos son obligatorios.", "error")
         else:
             password_hash = generate_password_hash(password)
-            _mysql_execute(
-                "UPDATE usuarios SET nombre=%s, email=%s, password=%s WHERE id_usuario=%s",
-                (nombre, email, password_hash, usuario_id),
-            )
+            if usuarios_has_mail_column():
+                _mysql_execute(
+                    "UPDATE usuarios SET nombre=%s, email=%s, mail=%s, password=%s WHERE id_usuario=%s",
+                    (nombre, email, email, password_hash, usuario_id),
+                )
+            else:
+                _mysql_execute(
+                    "UPDATE usuarios SET nombre=%s, email=%s, password=%s WHERE id_usuario=%s",
+                    (nombre, email, password_hash, usuario_id),
+                )
             flash("Usuario actualizado.", "ok")
             return redirect(url_for("mysql_usuarios"))
 

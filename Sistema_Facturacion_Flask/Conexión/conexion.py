@@ -275,3 +275,12 @@ def ensure_usuarios_columns() -> None:
     conn.commit()
     cursor.close()
     conn.close()
+
+
+def usuarios_has_mail_column() -> bool:
+    conn = get_connection()
+    cursor = conn.cursor()
+    has_mail = _column_exists(cursor, "usuarios", "mail")
+    cursor.close()
+    conn.close()
+    return has_mail
