@@ -49,7 +49,7 @@ def init_schema() -> None:
         CREATE TABLE IF NOT EXISTS usuarios (
             id_usuario INT AUTO_INCREMENT PRIMARY KEY,
             nombre VARCHAR(100) NOT NULL,
-            mail VARCHAR(120) NOT NULL,
+            email VARCHAR(120) NOT NULL,
             password VARCHAR(255) NOT NULL
         )
         """
@@ -69,7 +69,9 @@ def init_schema() -> None:
         """
         CREATE TABLE IF NOT EXISTS productos (
             id_producto INT AUTO_INCREMENT PRIMARY KEY,
-            nombre VARCHAR(120) NOT NULL
+            nombre VARCHAR(120) NOT NULL,
+            precio DECIMAL(10,2) NOT NULL DEFAULT 0,
+            stock INT NOT NULL DEFAULT 0
         )
         """
     )
@@ -186,13 +188,22 @@ def ensure_productos_columns() -> None:
         """
         CREATE TABLE IF NOT EXISTS productos (
             id_producto INT AUTO_INCREMENT PRIMARY KEY,
-            nombre VARCHAR(120) NOT NULL
+            nombre VARCHAR(120) NOT NULL,
+            precio DECIMAL(10,2) NOT NULL DEFAULT 0,
+            stock INT NOT NULL DEFAULT 0
         )
         """
     )
 
-    if not _column_exists(cursor, "productos", "nombre"):
-        cursor.execute("ALTER TABLE productos ADD COLUMN nombre VARCHAR(120) NOT NULL")
+    required_columns = {
+        "nombre": "VARCHAR(120) NOT NULL",
+        "precio": "DECIMAL(10,2) NOT NULL DEFAULT 0",
+        "stock": "INT NOT NULL DEFAULT 0",
+    }
+
+    for col, ddl in required_columns.items():
+        if not _column_exists(cursor, "productos", col):
+            cursor.execute(f"ALTER TABLE productos ADD COLUMN {col} {ddl}")
 
     conn.commit()
     cursor.close()
@@ -225,6 +236,41 @@ def ensure_detalle_columns() -> None:
     for col, ddl in required_columns.items():
         if not _column_exists(cursor, "detalle_factura", col):
             cursor.execute(f"ALTER TABLE detalle_factura ADD COLUMN {col} {ddl}")
+
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+
+def ensure_usuarios_columns() -> None:
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute(
+        """
+        CREATE TABLE IF NOT EXISTS usuarios (
+            id_usuario INT AUTO_INCREMENT PRIMARY KEY,
+            nombre VARCHAR(100) NOT NULL,
+            email VARCHAR(120) NOT NULL,
+            password VARCHAR(255) NOT NULL
+        )
+        """
+    )
+
+    required_columns = {
+        "nombre": "VARCHAR(100) NOT NULL",
+        "email": "VARCHAR(120) NOT NULL",
+        "password": "VARCHAR(255) NOT NULL",
+    }
+
+    for col, ddl in required_columns.items():
+        if not _column_exists(cursor, "usuarios", col):
+            cursor.execute(f"ALTER TABLE usuarios ADD COLUMN {col} {ddl}")
+
+    if _column_exists(cursor, "usuarios", "mail"):
+        cursor.execute(
+            "UPDATE usuarios SET email = mail WHERE (email IS NULL OR email = '')"
+        )
 
     conn.commit()
     cursor.close()

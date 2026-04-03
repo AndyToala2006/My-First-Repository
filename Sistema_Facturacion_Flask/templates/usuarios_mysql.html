@@ -12,7 +12,7 @@
             <tr>
                 <th>ID</th>
                 <th>Nombre</th>
-                <th>Correo</th>
+                <th>Email</th>
                 <th>Password</th>
                 <th>Acciones</th>
             </tr>
@@ -22,7 +22,7 @@
             <tr>
                 <td>{{ usuario.id_usuario }}</td>
                 <td>{{ usuario.nombre }}</td>
-                <td>{{ usuario.mail }}</td>
+                <td>{{ usuario.email }}</td>
                 <td>{{ usuario.password }}</td>
                 <td>
                     <a href="{{ url_for('mysql_usuario_editar', usuario_id=usuario.id_usuario) }}">Editar</a>

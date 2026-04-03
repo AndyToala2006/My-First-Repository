@@ -78,6 +78,12 @@ body {
     font-weight: 600;
 }
 
+.nav-user {
+    margin-left: auto;
+    font-weight: 600;
+    color: var(--muted);
+}
+
 .container {
     margin-top: 14px;
     margin-bottom: 14px;

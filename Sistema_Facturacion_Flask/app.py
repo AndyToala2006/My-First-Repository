@@ -1,13 +1,16 @@
 ﻿from __future__ import annotations
 
+import io
 import csv
 import json
 import os
 from datetime import date
 from pathlib import Path
 
-from flask import Flask, flash, redirect, render_template, request, url_for
+from flask import Flask, flash, redirect, render_template, request, url_for, send_file
+from flask_login import LoginManager, login_required, login_user, logout_user, current_user
 from sqlalchemy import func
+from werkzeug.security import generate_password_hash
 
 from Conexión.conexion import (
     get_connection,
@@ -17,11 +20,16 @@ from Conexión.conexion import (
     ensure_clientes_columns,
     ensure_productos_columns,
     ensure_detalle_columns,
+    ensure_usuarios_columns,
 )
+from forms.auth_forms import LoginForm, RegisterForm, ProductoForm
 from form import FacturaForm, RegistroOperacionForm
 from inventario.bd import FacturaDB, db
 from inventario.inventario import Inventario
 from inventario.productos import Factura
+from services.user_service import create_user, get_user_by_id, get_user_by_email, validate_login
+from services.producto_service import list_productos, get_producto, create_producto, update_producto, delete_producto
+from services.report_service import productos_pdf
 
 BASE_DIR = Path(__file__).resolve().parent
 DATA_DIR = BASE_DIR / "inventario" / "data"
@@ -113,6 +121,7 @@ def _mysql_ready() -> bool:
         ensure_productos_columns()
         ensure_facturas_columns()
         ensure_detalle_columns()
+        ensure_usuarios_columns()
         return True
     except Exception as exc:
         flash(f"No se pudo conectar a MySQL: {exc}", "error")
@@ -164,6 +173,10 @@ app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "litobanano-dev-key")
 app.config["SQLALCHEMY_DATABASE_URI"] = _build_database_uri()
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
+login_manager = LoginManager()
+login_manager.login_view = "login"
+login_manager.init_app(app)
+
 db.init_app(app)
 inventario_memoria = Inventario()
 
@@ -171,7 +184,60 @@ with app.app_context():
     db.create_all()
 
 
+@login_manager.user_loader
+def load_user(user_id: str):
+    try:
+        return get_user_by_id(int(user_id))
+    except Exception:
+        return None
+
+
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    form = LoginForm.from_request(request)
+    if request.method == "POST":
+        errores = form.validate()
+        if errores:
+            for error in errores:
+                flash(error, "error")
+        else:
+            user = validate_login(form.email, form.password)
+            if user:
+                login_user(user)
+                flash("Bienvenido al sistema.", "ok")
+                return redirect(url_for("index"))
+            flash("Credenciales incorrectas.", "error")
+    return render_template("auth/login.html", form=form)
+
+
+@app.route("/register", methods=["GET", "POST"])
+def register():
+    form = RegisterForm.from_request(request)
+    if request.method == "POST":
+        errores = form.validate()
+        if errores:
+            for error in errores:
+                flash(error, "error")
+        else:
+            if get_user_by_email(form.email):
+                flash("Ese email ya está registrado.", "error")
+            else:
+                create_user(form.nombre, form.email, form.password)
+                flash("Usuario registrado. Ahora inicia sesión.", "ok")
+                return redirect(url_for("login"))
+    return render_template("auth/register.html", form=form)
+
+
+@app.route("/logout")
+@login_required
+def logout():
+    logout_user()
+    flash("Sesión cerrada.", "ok")
+    return redirect(url_for("login"))
+
+
 @app.route("/")
+@login_required
 def index():
     total_facturas = FacturaDB.query.count()
     total_cajas = db.session.query(func.coalesce(func.sum(FacturaDB.cantidad_cajas), 0)).scalar()
@@ -197,11 +263,13 @@ def contactos():
 
 
 @app.route("/usuario/<nombre>")
+@login_required
 def usuario(nombre: str):
     return render_template("usuario.html", nombre=nombre, mensaje=f"Bienvenido, {nombre}.")
 
 
 @app.route("/cliente/<nombre>")
+@login_required
 def cliente(nombre: str):
     return render_template(
         "usuario.html",
@@ -211,6 +279,7 @@ def cliente(nombre: str):
 
 
 @app.route("/factura/<numero>")
+@login_required
 def factura_por_numero(numero: str):
     factura_db = FacturaDB.query.filter_by(numero_factura=numero).first()
     if not factura_db:
@@ -227,17 +296,86 @@ def factura_por_numero(numero: str):
 
 
 @app.route("/facturas")
+@login_required
 def facturas():
     facturas_db = FacturaDB.query.order_by(FacturaDB.id.desc()).all()
     return render_template("productos.html", facturas=facturas_db)
 
 
 @app.route("/productos")
-def productos_legacy():
-    return redirect(url_for("facturas"))
+@login_required
+def productos_list():
+    if not _mysql_ready():
+        return render_template("productos/list.html", productos=[])
+    productos = list_productos()
+    return render_template("productos/list.html", productos=productos)
+
+
+@app.route("/productos/nuevo", methods=["GET", "POST"])
+@login_required
+def productos_nuevo():
+    if not _mysql_ready():
+        return redirect(url_for("productos_list"))
+    form = ProductoForm.from_request(request)
+    if request.method == "POST":
+        errores = form.validate()
+        if errores:
+            for error in errores:
+                flash(error, "error")
+        else:
+            create_producto(form.nombre, form.precio, form.stock)
+            flash("Producto creado.", "ok")
+            return redirect(url_for("productos_list"))
+    return render_template("productos/form.html", form=form, accion="Crear")
+
+
+@app.route("/productos/<int:producto_id>/editar", methods=["GET", "POST"])
+@login_required
+def productos_editar(producto_id: int):
+    if not _mysql_ready():
+        return redirect(url_for("productos_list"))
+    producto = get_producto(producto_id)
+    if not producto:
+        flash("Producto no encontrado.", "error")
+        return redirect(url_for("productos_list"))
+    form = ProductoForm(nombre=producto.nombre, precio=producto.precio, stock=producto.stock)
+    if request.method == "POST":
+        form = ProductoForm.from_request(request)
+        errores = form.validate()
+        if errores:
+            for error in errores:
+                flash(error, "error")
+        else:
+            update_producto(producto_id, form.nombre, form.precio, form.stock)
+            flash("Producto actualizado.", "ok")
+            return redirect(url_for("productos_list"))
+    return render_template("productos/form.html", form=form, accion="Editar")
+
+
+@app.route("/productos/<int:producto_id>/eliminar", methods=["POST"])
+@login_required
+def productos_eliminar(producto_id: int):
+    if not _mysql_ready():
+        return redirect(url_for("productos_list"))
+    delete_producto(producto_id)
+    flash("Producto eliminado.", "ok")
+    return redirect(url_for("productos_list"))
+
+
+@app.route("/reportes/productos.pdf")
+@login_required
+def reporte_productos_pdf():
+    pdf_bytes = productos_pdf()
+    return send_file(
+        io.BytesIO(pdf_bytes),
+        download_name="reporte_productos.pdf",
+        mimetype="application/pdf",
+        as_attachment=True,
+    )
 
 
 @app.route("/facturas/nueva", methods=["GET", "POST"])
+@login_required
 def factura_nueva():
     form = FacturaForm.from_request(request)
     if request.method == "POST":
@@ -281,6 +419,7 @@ def factura_nueva():
 
 
 @app.route("/facturas/<int:factura_id>/editar", methods=["GET", "POST"])
+@login_required
 def factura_editar(factura_id: int):
     factura_db = FacturaDB.query.get_or_404(factura_id)
 
@@ -325,6 +464,7 @@ def factura_editar(factura_id: int):
 
 
 @app.route("/facturas/<int:factura_id>/eliminar", methods=["POST"])
+@login_required
 def factura_eliminar(factura_id: int):
     factura_db = FacturaDB.query.get_or_404(factura_id)
     db.session.delete(factura_db)
@@ -335,6 +475,7 @@ def factura_eliminar(factura_id: int):
 
 
 @app.route("/datos", methods=["GET", "POST"])
+@login_required
 def datos():
     form = RegistroOperacionForm.from_request(request)
 
@@ -371,32 +512,35 @@ def datos():
 
 
 @app.route("/mysql/usuarios")
+@login_required
 def mysql_usuarios():
     if not _mysql_ready():
         return render_template("usuarios_mysql.html", usuarios=[])
 
     usuarios = _mysql_fetch_all(
-        "SELECT id_usuario, nombre, mail, password FROM usuarios ORDER BY id_usuario DESC"
+        "SELECT id_usuario, nombre, email, password FROM usuarios ORDER BY id_usuario DESC"
     )
     return render_template("usuarios_mysql.html", usuarios=usuarios)
 
 
 @app.route("/mysql/usuarios/nuevo", methods=["GET", "POST"])
+@login_required
 def mysql_usuario_nuevo():
     if not _mysql_ready():
         return redirect(url_for("mysql_usuarios"))
 
     if request.method == "POST":
         nombre = request.form.get("nombre", "").strip()
-        mail = request.form.get("mail", "").strip()
+        email = request.form.get("email", "").strip()
         password = request.form.get("password", "").strip()
 
-        if not nombre or not mail or not password:
+        if not nombre or not email or not password:
             flash("Todos los campos son obligatorios.", "error")
         else:
+            password_hash = generate_password_hash(password)
             _mysql_execute(
-                "INSERT INTO usuarios (nombre, mail, password) VALUES (%s, %s, %s)",
-                (nombre, mail, password),
+                "INSERT INTO usuarios (nombre, email, password) VALUES (%s, %s, %s)",
+                (nombre, email, password_hash),
             )
             flash("Usuario creado en MySQL.", "ok")
             return redirect(url_for("mysql_usuarios"))
@@ -405,12 +549,13 @@ def mysql_usuario_nuevo():
 
 
 @app.route("/mysql/usuarios/<int:usuario_id>/editar", methods=["GET", "POST"])
+@login_required
 def mysql_usuario_editar(usuario_id: int):
     if not _mysql_ready():
         return redirect(url_for("mysql_usuarios"))
 
     usuario = _mysql_fetch_one(
-        "SELECT id_usuario, nombre, mail, password FROM usuarios WHERE id_usuario = %s",
+        "SELECT id_usuario, nombre, email, password FROM usuarios WHERE id_usuario = %s",
         (usuario_id,),
     )
     if not usuario:
@@ -419,15 +564,16 @@ def mysql_usuario_editar(usuario_id: int):
 
     if request.method == "POST":
         nombre = request.form.get("nombre", "").strip()
-        mail = request.form.get("mail", "").strip()
+        email = request.form.get("email", "").strip()
         password = request.form.get("password", "").strip()
 
-        if not nombre or not mail or not password:
+        if not nombre or not email or not password:
             flash("Todos los campos son obligatorios.", "error")
         else:
+            password_hash = generate_password_hash(password)
             _mysql_execute(
-                "UPDATE usuarios SET nombre=%s, mail=%s, password=%s WHERE id_usuario=%s",
-                (nombre, mail, password, usuario_id),
+                "UPDATE usuarios SET nombre=%s, email=%s, password=%s WHERE id_usuario=%s",
+                (nombre, email, password_hash, usuario_id),
             )
             flash("Usuario actualizado.", "ok")
             return redirect(url_for("mysql_usuarios"))
@@ -436,6 +582,7 @@ def mysql_usuario_editar(usuario_id: int):
 
 
 @app.route("/mysql/usuarios/<int:usuario_id>/eliminar", methods=["POST"])
+@login_required
 def mysql_usuario_eliminar(usuario_id: int):
     if not _mysql_ready():
         return redirect(url_for("mysql_usuarios"))
@@ -446,6 +593,7 @@ def mysql_usuario_eliminar(usuario_id: int):
 
 
 @app.route("/mysql/facturas")
+@login_required
 def mysql_facturas():
     if not _mysql_ready():
         return render_template("facturas_mysql.html", facturas=[])
@@ -476,6 +624,7 @@ def mysql_facturas():
 
 
 @app.route("/mysql/facturas/nueva", methods=["GET", "POST"])
+@login_required
 def mysql_factura_nueva():
     if not _mysql_ready():
         return redirect(url_for("mysql_facturas"))
@@ -573,6 +722,7 @@ def mysql_factura_nueva():
 
 
 @app.route("/mysql/facturas/<int:factura_id>/editar", methods=["GET", "POST"])
+@login_required
 def mysql_factura_editar(factura_id: int):
     if not _mysql_ready():
         return redirect(url_for("mysql_facturas"))
@@ -679,6 +829,7 @@ def mysql_factura_editar(factura_id: int):
 
 
 @app.route("/mysql/facturas/<int:factura_id>/eliminar", methods=["POST"])
+@login_required
 def mysql_factura_eliminar(factura_id: int):
     if not _mysql_ready():
         return redirect(url_for("mysql_facturas"))
@@ -691,3 +842,6 @@ def mysql_factura_eliminar(factura_id: int):
 
 if __name__ == "__main__":
     app.run(debug=True)
+
+
+
