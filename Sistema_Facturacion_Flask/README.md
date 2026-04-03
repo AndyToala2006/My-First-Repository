@@ -5,15 +5,25 @@ Aplicación Flask profesional para gestión de facturación de exportación de b
 ## Funcionalidades
 - Dashboard con métricas de facturación.
 - CRUD completo de facturas con SQLite + SQLAlchemy.
-- Rutas dinámicas: `/cliente/<nombre>` y `/factura/<numero>`.
 - Persistencia adicional con TXT, JSON y CSV.
-- Módulo POO con colecciones (`dict`, `list`, `set`, `tuple`) y menú de consola.
+- Integración MySQL (MariaDB) con CRUD de usuarios y facturas.
+- Módulo POO con colecciones (`dict`, `list`, `set`, `tuple`).
 
-## Estructura académica cubierta
-- Semana 9: Flask, rutas, GitHub/Render.
-- Semana 10: Plantillas con herencia (`base.html`).
-- Semana 11: POO, colecciones y CRUD.
-- Semana 12: Persistencia en archivos + SQLite con ORM.
+## MySQL (MariaDB) - Variables de entorno
+Configura estas variables antes de usar las rutas MySQL:
+- `MYSQL_HOST`
+- `MYSQL_USER`
+- `MYSQL_PASSWORD`
+- `MYSQL_DATABASE`
+- `MYSQL_PORT` (opcional, por defecto 3306)
+
+Las tablas se crean automáticamente en la primera conexión:
+- `usuarios` (id_usuario, nombre, mail, password)
+- `facturas` (id_factura, numero_factura, fecha_emision, cliente, ruc, destino, producto, cantidad_cajas, precio_caja, total, estado)
+
+## Rutas MySQL
+- `/mysql/usuarios`
+- `/mysql/facturas`
 
 ## Ejecución local
 ```bash
@@ -25,5 +35,5 @@ python app.py
 
 ## Deploy en Render
 - Build command: `pip install -r requirements.txt`
-- Start command: `gunicorn app:app`
-- Variables opcionales: `SECRET_KEY`, `DATABASE_URL`
+- Start command: `gunicorn app:app --bind 0.0.0.0:$PORT`
+- Variables recomendadas: `SECRET_KEY`, `MYSQL_HOST`, `MYSQL_USER`, `MYSQL_PASSWORD`, `MYSQL_DATABASE`, `MYSQL_PORT`

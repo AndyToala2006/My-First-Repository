@@ -9,6 +9,15 @@ from pathlib import Path
 from flask import Flask, flash, redirect, render_template, request, url_for
 from sqlalchemy import func
 
+from Conexión.conexion import (
+    get_connection,
+    init_schema,
+    is_configured,
+    ensure_facturas_columns,
+    ensure_clientes_columns,
+    ensure_productos_columns,
+    ensure_detalle_columns,
+)
 from form import FacturaForm, RegistroOperacionForm
 from inventario.bd import FacturaDB, db
 from inventario.inventario import Inventario
@@ -89,6 +98,65 @@ def _read_csv() -> list[dict[str, str]]:
     with CSV_PATH.open("r", encoding="utf-8-sig", newline="") as archivo:
         reader = csv.DictReader(archivo)
         return list(reader)
+
+
+def _mysql_ready() -> bool:
+    if not is_configured():
+        flash(
+            "MySQL no está configurado. Define MYSQL_HOST, MYSQL_USER, MYSQL_PASSWORD y MYSQL_DATABASE.",
+            "error",
+        )
+        return False
+    try:
+        init_schema()
+        ensure_clientes_columns()
+        ensure_productos_columns()
+        ensure_facturas_columns()
+        ensure_detalle_columns()
+        return True
+    except Exception as exc:
+        flash(f"No se pudo conectar a MySQL: {exc}", "error")
+        return False
+
+
+def _mysql_fetch_all(query: str, params: tuple = ()) -> list[dict]:
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute(query, params)
+    rows = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    return rows
+
+
+def _mysql_fetch_one(query: str, params: tuple = ()) -> dict | None:
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute(query, params)
+    row = cursor.fetchone()
+    cursor.close()
+    conn.close()
+    return row
+
+
+def _mysql_execute(query: str, params: tuple = ()) -> None:
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute(query, params)
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+
+def _mysql_execute_returning_id(query: str, params: tuple = ()) -> int:
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute(query, params)
+    conn.commit()
+    new_id = cursor.lastrowid
+    cursor.close()
+    conn.close()
+    return new_id
 
 
 app = Flask(__name__)
@@ -300,6 +368,325 @@ def datos():
         datos_csv=_read_csv(),
         resumen_memoria=inventario_memoria.resumen_colecciones(),
     )
+
+
+@app.route("/mysql/usuarios")
+def mysql_usuarios():
+    if not _mysql_ready():
+        return render_template("usuarios_mysql.html", usuarios=[])
+
+    usuarios = _mysql_fetch_all(
+        "SELECT id_usuario, nombre, mail, password FROM usuarios ORDER BY id_usuario DESC"
+    )
+    return render_template("usuarios_mysql.html", usuarios=usuarios)
+
+
+@app.route("/mysql/usuarios/nuevo", methods=["GET", "POST"])
+def mysql_usuario_nuevo():
+    if not _mysql_ready():
+        return redirect(url_for("mysql_usuarios"))
+
+    if request.method == "POST":
+        nombre = request.form.get("nombre", "").strip()
+        mail = request.form.get("mail", "").strip()
+        password = request.form.get("password", "").strip()
+
+        if not nombre or not mail or not password:
+            flash("Todos los campos son obligatorios.", "error")
+        else:
+            _mysql_execute(
+                "INSERT INTO usuarios (nombre, mail, password) VALUES (%s, %s, %s)",
+                (nombre, mail, password),
+            )
+            flash("Usuario creado en MySQL.", "ok")
+            return redirect(url_for("mysql_usuarios"))
+
+    return render_template("usuario_mysql_form.html", usuario=None, accion="Crear")
+
+
+@app.route("/mysql/usuarios/<int:usuario_id>/editar", methods=["GET", "POST"])
+def mysql_usuario_editar(usuario_id: int):
+    if not _mysql_ready():
+        return redirect(url_for("mysql_usuarios"))
+
+    usuario = _mysql_fetch_one(
+        "SELECT id_usuario, nombre, mail, password FROM usuarios WHERE id_usuario = %s",
+        (usuario_id,),
+    )
+    if not usuario:
+        flash("Usuario no encontrado.", "error")
+        return redirect(url_for("mysql_usuarios"))
+
+    if request.method == "POST":
+        nombre = request.form.get("nombre", "").strip()
+        mail = request.form.get("mail", "").strip()
+        password = request.form.get("password", "").strip()
+
+        if not nombre or not mail or not password:
+            flash("Todos los campos son obligatorios.", "error")
+        else:
+            _mysql_execute(
+                "UPDATE usuarios SET nombre=%s, mail=%s, password=%s WHERE id_usuario=%s",
+                (nombre, mail, password, usuario_id),
+            )
+            flash("Usuario actualizado.", "ok")
+            return redirect(url_for("mysql_usuarios"))
+
+    return render_template("usuario_mysql_form.html", usuario=usuario, accion="Editar")
+
+
+@app.route("/mysql/usuarios/<int:usuario_id>/eliminar", methods=["POST"])
+def mysql_usuario_eliminar(usuario_id: int):
+    if not _mysql_ready():
+        return redirect(url_for("mysql_usuarios"))
+
+    _mysql_execute("DELETE FROM usuarios WHERE id_usuario=%s", (usuario_id,))
+    flash("Usuario eliminado.", "ok")
+    return redirect(url_for("mysql_usuarios"))
+
+
+@app.route("/mysql/facturas")
+def mysql_facturas():
+    if not _mysql_ready():
+        return render_template("facturas_mysql.html", facturas=[])
+
+    facturas = _mysql_fetch_all(
+        """
+        SELECT
+            f.id_factura,
+            f.numero_factura,
+            f.fecha,
+            c.nombre AS cliente,
+            c.ruc,
+            f.destino,
+            GROUP_CONCAT(p.nombre SEPARATOR ', ') AS productos,
+            SUM(df.cantidad) AS total_cajas,
+            SUM(df.precio_unitario) / COUNT(df.id_detalle) AS precio_caja,
+            f.total,
+            f.estado
+        FROM facturas f
+        JOIN clientes c ON f.id_cliente = c.id_cliente
+        JOIN detalle_factura df ON f.id_factura = df.id_factura
+        JOIN productos p ON df.id_producto = p.id_producto
+        GROUP BY f.id_factura
+        ORDER BY f.id_factura DESC
+        """
+    )
+    return render_template("facturas_mysql.html", facturas=facturas)
+
+
+@app.route("/mysql/facturas/nueva", methods=["GET", "POST"])
+def mysql_factura_nueva():
+    if not _mysql_ready():
+        return redirect(url_for("mysql_facturas"))
+
+    if request.method == "POST":
+        numero_factura = request.form.get("numero_factura", "").strip()
+        fecha_emision = request.form.get("fecha_emision", str(date.today())).strip()
+        cliente = request.form.get("cliente", "").strip()
+        ruc = request.form.get("ruc", "").strip()
+        destino = request.form.get("destino", "").strip()
+        producto = request.form.get("producto", "").strip()
+        cantidad_cajas = request.form.get("cantidad_cajas", "0").strip()
+        precio_caja = request.form.get("precio_caja", "0").strip()
+        estado = request.form.get("estado", "Emitida").strip()
+
+        try:
+            cantidad_cajas_int = int(cantidad_cajas)
+            precio_caja_float = float(precio_caja)
+        except ValueError:
+            cantidad_cajas_int = -1
+            precio_caja_float = -1
+
+        if (
+            not numero_factura
+            or not cliente
+            or not ruc
+            or not destino
+            or not producto
+            or cantidad_cajas_int <= 0
+            or precio_caja_float <= 0
+        ):
+            flash("Completa todos los campos con valores válidos.", "error")
+        else:
+            total = round(cantidad_cajas_int * precio_caja_float, 2)
+            cliente_row = _mysql_fetch_one(
+                "SELECT id_cliente FROM clientes WHERE ruc = %s",
+                (ruc,),
+            )
+            if cliente_row:
+                id_cliente = cliente_row["id_cliente"]
+                _mysql_execute(
+                    "UPDATE clientes SET nombre=%s WHERE id_cliente=%s",
+                    (cliente, id_cliente),
+                )
+            else:
+                id_cliente = _mysql_execute_returning_id(
+                    "INSERT INTO clientes (nombre, ruc) VALUES (%s, %s)",
+                    (cliente, ruc),
+                )
+
+            producto_row = _mysql_fetch_one(
+                "SELECT id_producto FROM productos WHERE nombre = %s",
+                (producto,),
+            )
+            if producto_row:
+                id_producto = producto_row["id_producto"]
+            else:
+                id_producto = _mysql_execute_returning_id(
+                    "INSERT INTO productos (nombre) VALUES (%s)",
+                    (producto,),
+                )
+
+            id_factura = _mysql_execute_returning_id(
+                """
+                INSERT INTO facturas (
+                    numero_factura, fecha, id_cliente, destino, total, estado
+                ) VALUES (%s, %s, %s, %s, %s, %s)
+                """,
+                (
+                    numero_factura,
+                    fecha_emision,
+                    id_cliente,
+                    destino,
+                    total,
+                    estado,
+                ),
+            )
+
+            _mysql_execute(
+                """
+                INSERT INTO detalle_factura (id_factura, id_producto, cantidad, precio_unitario)
+                VALUES (%s, %s, %s, %s)
+                """,
+                (
+                    id_factura,
+                    id_producto,
+                    cantidad_cajas_int,
+                    precio_caja_float,
+                ),
+            )
+            flash("Factura creada en MySQL.", "ok")
+            return redirect(url_for("mysql_facturas"))
+
+    return render_template("factura_mysql_form.html", factura=None, accion="Crear")
+
+
+@app.route("/mysql/facturas/<int:factura_id>/editar", methods=["GET", "POST"])
+def mysql_factura_editar(factura_id: int):
+    if not _mysql_ready():
+        return redirect(url_for("mysql_facturas"))
+
+    factura = _mysql_fetch_one(
+        """
+        SELECT
+            f.id_factura,
+            f.numero_factura,
+            f.fecha,
+            f.destino,
+            f.total,
+            f.estado,
+            c.id_cliente,
+            c.nombre AS cliente,
+            c.ruc,
+            p.id_producto,
+            p.nombre AS producto,
+            df.cantidad,
+            df.precio_unitario
+        FROM facturas f
+        JOIN clientes c ON f.id_cliente = c.id_cliente
+        JOIN detalle_factura df ON f.id_factura = df.id_factura
+        JOIN productos p ON df.id_producto = p.id_producto
+        WHERE f.id_factura = %s
+        """,
+        (factura_id,),
+    )
+    if not factura:
+        flash("Factura no encontrada.", "error")
+        return redirect(url_for("mysql_facturas"))
+
+    if request.method == "POST":
+        numero_factura = request.form.get("numero_factura", "").strip()
+        fecha_emision = request.form.get("fecha_emision", str(factura["fecha"])).strip()
+        cliente = request.form.get("cliente", "").strip()
+        ruc = request.form.get("ruc", "").strip()
+        destino = request.form.get("destino", "").strip()
+        producto = request.form.get("producto", "").strip()
+        cantidad_cajas = request.form.get("cantidad_cajas", "0").strip()
+        precio_caja = request.form.get("precio_caja", "0").strip()
+        estado = request.form.get("estado", "Emitida").strip()
+
+        try:
+            cantidad_cajas_int = int(cantidad_cajas)
+            precio_caja_float = float(precio_caja)
+        except ValueError:
+            cantidad_cajas_int = -1
+            precio_caja_float = -1
+
+        if (
+            not numero_factura
+            or not cliente
+            or not ruc
+            or not destino
+            or not producto
+            or cantidad_cajas_int <= 0
+            or precio_caja_float <= 0
+        ):
+            flash("Completa todos los campos con valores válidos.", "error")
+        else:
+            total = round(cantidad_cajas_int * precio_caja_float, 2)
+            _mysql_execute(
+                "UPDATE clientes SET nombre=%s, ruc=%s WHERE id_cliente=%s",
+                (cliente, ruc, factura["id_cliente"]),
+            )
+            _mysql_execute(
+                "UPDATE productos SET nombre=%s WHERE id_producto=%s",
+                (producto, factura["id_producto"]),
+            )
+            _mysql_execute(
+                """
+                UPDATE facturas
+                SET numero_factura=%s, fecha=%s, id_cliente=%s, destino=%s, total=%s, estado=%s
+                WHERE id_factura=%s
+                """,
+                (
+                    numero_factura,
+                    fecha_emision,
+                    factura["id_cliente"],
+                    destino,
+                    total,
+                    estado,
+                    factura_id,
+                ),
+            )
+            _mysql_execute(
+                """
+                UPDATE detalle_factura
+                SET id_producto=%s, cantidad=%s, precio_unitario=%s
+                WHERE id_factura=%s
+                """,
+                (
+                    factura["id_producto"],
+                    cantidad_cajas_int,
+                    precio_caja_float,
+                    factura_id,
+                ),
+            )
+            flash("Factura actualizada.", "ok")
+            return redirect(url_for("mysql_facturas"))
+
+    return render_template("factura_mysql_form.html", factura=factura, accion="Editar")
+
+
+@app.route("/mysql/facturas/<int:factura_id>/eliminar", methods=["POST"])
+def mysql_factura_eliminar(factura_id: int):
+    if not _mysql_ready():
+        return redirect(url_for("mysql_facturas"))
+
+    _mysql_execute("DELETE FROM detalle_factura WHERE id_factura=%s", (factura_id,))
+    _mysql_execute("DELETE FROM facturas WHERE id_factura=%s", (factura_id,))
+    flash("Factura eliminada.", "ok")
+    return redirect(url_for("mysql_facturas"))
 
 
 if __name__ == "__main__":

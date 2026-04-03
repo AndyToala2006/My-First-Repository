@@ -1,0 +1,22 @@
+﻿{% extends "base.html" %}
+
+{% block content %}
+<section class="panel form-panel">
+    <h2>{{ accion }} usuario (MySQL)</h2>
+    <form method="post" class="form-grid">
+        <label for="nombre">Nombre</label>
+        <input id="nombre" name="nombre" type="text" value="{{ usuario.nombre if usuario else '' }}" required>
+
+        <label for="mail">Correo</label>
+        <input id="mail" name="mail" type="email" value="{{ usuario.mail if usuario else '' }}" required>
+
+        <label for="password">Password</label>
+        <input id="password" name="password" type="text" value="{{ usuario.password if usuario else '' }}" required>
+
+        <div class="actions">
+            <button type="submit">{{ accion }}</button>
+            <a href="{{ url_for('mysql_usuarios') }}">Cancelar</a>
+        </div>
+    </form>
+</section>
+{% endblock %}

@@ -18,8 +18,10 @@
 
     <nav class="site-nav">
         <a href="{{ url_for('index') }}">Panel</a>
-        <a href="{{ url_for('facturas') }}">Facturas</a>
+        <a href="{{ url_for('facturas') }}">Facturas SQLite</a>
         <a href="{{ url_for('factura_nueva') }}">Nueva factura</a>
+        <a href="{{ url_for('mysql_usuarios') }}">Usuarios MySQL</a>
+        <a href="{{ url_for('mysql_facturas') }}">Facturas MySQL</a>
         <a href="{{ url_for('datos') }}">Persistencia</a>
         <a href="{{ url_for('about') }}">Acerca de</a>
         <a href="{{ url_for('contactos') }}">Contacto</a>
@@ -40,7 +42,7 @@
     </main>
 
     <footer class="site-footer">
-        <p>© 2026 Litobanano S.A. | Plataforma académica DAW lista para despliegue en Render</p>
+        <p>© 2026 Litobanano S.A. | Plataforma académica DAW lista para despliegue</p>
     </footer>
 </body>
 </html>
