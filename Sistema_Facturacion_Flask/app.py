@@ -846,7 +846,3 @@ def mysql_factura_eliminar(factura_id: int):
 
 if __name__ == "__main__":
     app.run(debug=True)
-
-
-
-
