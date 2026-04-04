@@ -8,20 +8,36 @@
 </head>
 <body>
     <div class="page-bg"></div>
-    <div class="wrapper">
-        <header class="site-header">
+    <div class="app-shell">
+        <header class="hero">
             <div>
-                <p class="badge">Litobanano S.A.</p>
-                <h1>Plataforma Empresarial de Facturación y Exportación</h1>
-                <p>Control financiero, operaciones y logística de exportación en un solo panel.</p>
+                <span class="chip">Litobanano S.A.</span>
+                <h1>Centro Integral de Facturación y Exportación</h1>
+                <p>Orquesta clientes, productos, facturas y reportes con control financiero de punta a punta.</p>
+            </div>
+            <div class="hero-aside">
+                <div class="hero-panel">
+                    <span class="muted">Estado de sesión</span>
+                    {% if current_user.is_authenticated %}
+                        <strong>{{ current_user.nombre }}</strong>
+                        <span class="muted">Acceso corporativo activo</span>
+                    {% else %}
+                        <strong>Invitado</strong>
+                        <span class="muted">Inicia sesión para operar</span>
+                    {% endif %}
+                </div>
+                <div class="hero-actions">
+                    <a class="btn" href="{{ url_for('factura_nueva') }}">Nueva factura</a>
+                    <a class="btn btn-ghost" href="{{ url_for('facturas') }}">Ver facturas</a>
+                </div>
             </div>
         </header>
 
-        <div class="topbar">
+        <div class="top-nav">
             <div class="brand-mark">LB</div>
-            <div>
+            <div class="nav-title">
                 <strong>Centro de Operaciones</strong>
-                <div class="muted">Gestión integral de clientes, productos y facturas</div>
+                <span class="muted">Gestión integral de clientes, productos y facturas</span>
             </div>
             <div class="nav-links">
                 <a href="{{ url_for('index') }}">Panel</a>
@@ -60,7 +76,7 @@
         </main>
 
         <footer class="site-footer">
-            <p>© 2026 Litobanano S.A. | Sistema empresarial operativo listo para auditoría y control</p>
+            <p>© 2026 Litobanano S.A. | Operación segura, trazable y lista para auditoría</p>
         </footer>
     </div>
 </body>

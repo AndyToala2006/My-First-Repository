@@ -2,7 +2,11 @@
 
 {% block content %}
 <section class="panel">
-    <h2>Cliente: {{ nombre }}</h2>
-    <p>{{ mensaje }}</p>
+    <h2>{{ nombre }}</h2>
+    <p class="muted">{{ mensaje }}</p>
+    <div class="actions">
+        <a class="btn btn-ghost" href="{{ url_for('facturas') }}">Volver a facturas</a>
+        <a class="btn" href="{{ url_for('factura_nueva') }}">Nueva factura</a>
+    </div>
 </section>
 {% endblock %}

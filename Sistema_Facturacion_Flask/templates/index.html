@@ -1,30 +1,36 @@
-ï»¿{% extends "base.html" %}
+{% extends "base.html" %}
 
 {% block content %}
-<section class="panel">
+<section class="panel highlight">
     <div class="panel-head">
-        <div>
-            <h2>Estado operativo</h2>
-            <p class="muted">Resumen en tiempo real de facturaciÃ³n, logÃ­stica y cartera activa.</p>
+        <div class="panel-title">
+            <span class="pill">Misión crítica</span>
+            <h2>Centro de control operativo</h2>
+            <p class="muted">Prioriza la emisión de facturas y la salud del inventario en un solo flujo de trabajo.</p>
         </div>
-        <div>
+        <div class="actions">
             <a class="btn" href="{{ url_for('factura_nueva') }}">Emitir factura</a>
+            <a class="btn btn-secondary" href="{{ url_for('mysql_facturas') }}">Facturas MySQL</a>
+            <a class="btn btn-ghost" href="{{ url_for('productos_list') }}">Inventario</a>
         </div>
     </div>
 </section>
 
-<section class="cards">
-    <article class="card">
+<section class="stat-grid">
+    <article class="stat-card">
         <h3>Facturas emitidas</h3>
         <p class="metric">{{ total_facturas }}</p>
+        <span class="muted">Último corte: hoy</span>
     </article>
-    <article class="card">
+    <article class="stat-card">
         <h3>Cajas exportadas</h3>
         <p class="metric">{{ total_cajas }}</p>
+        <span class="muted">Balance logístico</span>
     </article>
-    <article class="card">
+    <article class="stat-card">
         <h3>Total facturado</h3>
         <p class="metric">${{ "%.2f"|format(total_facturado) }}</p>
+        <span class="muted">Resumen financiero</span>
     </article>
 </section>
 
@@ -32,72 +38,79 @@
     <div class="kpi">
         <span class="muted">Cumplimiento de despachos</span>
         <strong>98.6%</strong>
+        <div class="progress"><span style="width: 98%;"></span></div>
     </div>
     <div class="kpi">
         <span class="muted">Clientes activos</span>
         <strong>24</strong>
+        <div class="progress"><span style="width: 72%;"></span></div>
     </div>
     <div class="kpi">
         <span class="muted">Rutas internacionales</span>
         <strong>9</strong>
+        <div class="progress"><span style="width: 64%;"></span></div>
     </div>
 </section>
 
 <section class="panel">
     <div class="panel-head">
-        <h2>Ãšltimas facturas registradas</h2>
-        <a class="btn" href="{{ url_for('facturas') }}">Ver todas</a>
+        <h2>Últimas facturas registradas</h2>
+        <a class="btn btn-ghost" href="{{ url_for('facturas') }}">Ver todas</a>
     </div>
-    <table>
-        <thead>
-            <tr>
-                <th>NÃºmero</th>
-                <th>Fecha</th>
-                <th>Cliente</th>
-                <th>Destino</th>
-                <th>Total</th>
-                <th>Estado</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for factura in ultimas_facturas %}
-            <tr>
-                <td>{{ factura.numero_factura }}</td>
-                <td>{{ factura.fecha_emision }}</td>
-                <td>{{ factura.cliente }}</td>
-                <td>{{ factura.destino }}</td>
-                <td>${{ "%.2f"|format(factura.total) }}</td>
-                <td>{{ factura.estado }}</td>
-            </tr>
-            {% else %}
-            <tr>
-                <td colspan="6">No hay facturas registradas.</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Número</th>
+                    <th>Fecha</th>
+                    <th>Cliente</th>
+                    <th>Destino</th>
+                    <th>Total</th>
+                    <th>Estado</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for factura in ultimas_facturas %}
+                <tr>
+                    <td>{{ factura.numero_factura }}</td>
+                    <td>{{ factura.fecha_emision }}</td>
+                    <td>{{ factura.cliente }}</td>
+                    <td>{{ factura.destino }}</td>
+                    <td>${{ "%.2f"|format(factura.total) }}</td>
+                    <td>{{ factura.estado }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="6">No hay facturas registradas.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 </section>
 
-<section class="panel">
+<section class="panel alt">
     <div class="panel-head">
-        <h2>Accesos rÃ¡pidos</h2>
+        <h2>Accesos rápidos inteligentes</h2>
+        <span class="muted">Salta directo a los puntos más importantes.</span>
     </div>
-    <div class="kpi-row">
-        <div class="kpi">
-            <span class="muted">GestiÃ³n de productos</span>
-            <strong>Inventario MySQL</strong>
-            <a class="btn" href="{{ url_for('productos_list') }}">Administrar</a>
-        </div>
-        <div class="kpi">
-            <span class="muted">Usuarios corporativos</span>
-            <strong>Control de acceso</strong>
-            <a class="btn" href="{{ url_for('mysql_usuarios') }}">Gestionar</a>
-        </div>
-        <div class="kpi">
-            <span class="muted">Reporte financiero</span>
-            <strong>PDF Productos</strong>
-            <a class="btn" href="{{ url_for('reporte_productos_pdf') }}">Descargar</a>
-        </div>
+    <div class="action-grid">
+        <a class="link-card" href="{{ url_for('factura_nueva') }}">
+            <strong>Registrar nueva factura</strong>
+            <span>Flujo crítico de ingresos y exportación.</span>
+        </a>
+        <a class="link-card" href="{{ url_for('productos_list') }}">
+            <strong>Inventario y precios</strong>
+            <span>Controla stock, costos y disponibilidad.</span>
+        </a>
+        <a class="link-card" href="{{ url_for('mysql_usuarios') }}">
+            <strong>Usuarios corporativos</strong>
+            <span>Permisos y accesos del equipo.</span>
+        </a>
+        <a class="link-card" href="{{ url_for('reporte_productos_pdf') }}">
+            <strong>Reporte financiero PDF</strong>
+            <span>Genera reporte ejecutivo en segundos.</span>
+        </a>
     </div>
 </section>
 {% endblock %}

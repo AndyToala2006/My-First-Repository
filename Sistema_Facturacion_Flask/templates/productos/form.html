@@ -4,18 +4,24 @@
 <section class="panel form-panel">
     <h2>{{ accion }} producto</h2>
     <form method="post" class="form-grid">
-        <label for="nombre">Nombre</label>
-        <input id="nombre" name="nombre" type="text" value="{{ form.nombre }}" required>
+        <div class="field">
+            <label for="nombre">Nombre</label>
+            <input id="nombre" name="nombre" type="text" value="{{ form.nombre }}" required>
+        </div>
 
-        <label for="precio">Precio</label>
-        <input id="precio" name="precio" type="number" min="0.01" step="0.01" value="{{ form.precio }}" required>
+        <div class="field">
+            <label for="precio">Precio</label>
+            <input id="precio" name="precio" type="number" min="0.01" step="0.01" value="{{ form.precio }}" required>
+        </div>
 
-        <label for="stock">Stock</label>
-        <input id="stock" name="stock" type="number" min="0" value="{{ form.stock }}" required>
+        <div class="field">
+            <label for="stock">Stock</label>
+            <input id="stock" name="stock" type="number" min="0" value="{{ form.stock }}" required>
+        </div>
 
         <div class="actions">
             <button type="submit">{{ accion }}</button>
-            <a href="{{ url_for('productos_list') }}">Cancelar</a>
+            <a class="btn btn-ghost" href="{{ url_for('productos_list') }}">Cancelar</a>
         </div>
     </form>
 </section>

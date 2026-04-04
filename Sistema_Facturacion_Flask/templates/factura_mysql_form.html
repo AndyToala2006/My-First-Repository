@@ -4,41 +4,59 @@
 <section class="panel form-panel">
     <h2>{{ accion }} factura (MySQL)</h2>
     <form method="post" class="form-grid">
-        <label for="numero_factura">Número</label>
-        <input id="numero_factura" name="numero_factura" type="text" value="{{ factura.numero_factura if factura else '' }}" required>
+        <div class="field">
+            <label for="numero_factura">Número</label>
+            <input id="numero_factura" name="numero_factura" type="text" value="{{ factura.numero_factura if factura else '' }}" required>
+        </div>
 
-        <label for="fecha_emision">Fecha emisión</label>
-        <input id="fecha_emision" name="fecha_emision" type="date" value="{{ factura.fecha if factura else '' }}" required>
+        <div class="field">
+            <label for="fecha_emision">Fecha emisión</label>
+            <input id="fecha_emision" name="fecha_emision" type="date" value="{{ factura.fecha if factura else '' }}" required>
+        </div>
 
-        <label for="cliente">Cliente</label>
-        <input id="cliente" name="cliente" type="text" value="{{ factura.cliente if factura else '' }}" required>
+        <div class="field">
+            <label for="cliente">Cliente</label>
+            <input id="cliente" name="cliente" type="text" value="{{ factura.cliente if factura else '' }}" required>
+        </div>
 
-        <label for="ruc">RUC</label>
-        <input id="ruc" name="ruc" type="text" value="{{ factura.ruc if factura else '' }}" required>
+        <div class="field">
+            <label for="ruc">RUC</label>
+            <input id="ruc" name="ruc" type="text" value="{{ factura.ruc if factura else '' }}" required>
+        </div>
 
-        <label for="destino">Destino</label>
-        <input id="destino" name="destino" type="text" value="{{ factura.destino if factura else '' }}" required>
+        <div class="field">
+            <label for="destino">Destino</label>
+            <input id="destino" name="destino" type="text" value="{{ factura.destino if factura else '' }}" required>
+        </div>
 
-        <label for="producto">Producto</label>
-        <input id="producto" name="producto" type="text" value="{{ factura.producto if factura else '' }}" required>
+        <div class="field">
+            <label for="producto">Producto</label>
+            <input id="producto" name="producto" type="text" value="{{ factura.producto if factura else '' }}" required>
+        </div>
 
-        <label for="cantidad_cajas">Cantidad de cajas</label>
-        <input id="cantidad_cajas" name="cantidad_cajas" type="number" min="1" value="{{ factura.cantidad if factura else '' }}" required>
+        <div class="field">
+            <label for="cantidad_cajas">Cantidad de cajas</label>
+            <input id="cantidad_cajas" name="cantidad_cajas" type="number" min="1" value="{{ factura.cantidad if factura else '' }}" required>
+        </div>
 
-        <label for="precio_caja">Precio por caja</label>
-        <input id="precio_caja" name="precio_caja" type="number" min="0.01" step="0.01" value="{{ factura.precio_unitario if factura else '' }}" required>
+        <div class="field">
+            <label for="precio_caja">Precio por caja</label>
+            <input id="precio_caja" name="precio_caja" type="number" min="0.01" step="0.01" value="{{ factura.precio_unitario if factura else '' }}" required>
+        </div>
 
-        <label for="estado">Estado</label>
-        <select id="estado" name="estado">
-            {% set estado = factura.estado if factura else 'Emitida' %}
-            <option value="Emitida" {% if estado == 'Emitida' %}selected{% endif %}>Emitida</option>
-            <option value="Pagada" {% if estado == 'Pagada' %}selected{% endif %}>Pagada</option>
-            <option value="Pendiente" {% if estado == 'Pendiente' %}selected{% endif %}>Pendiente</option>
-        </select>
+        <div class="field">
+            <label for="estado">Estado</label>
+            <select id="estado" name="estado">
+                {% set estado = factura.estado if factura else 'Emitida' %}
+                <option value="Emitida" {% if estado == 'Emitida' %}selected{% endif %}>Emitida</option>
+                <option value="Pagada" {% if estado == 'Pagada' %}selected{% endif %}>Pagada</option>
+                <option value="Pendiente" {% if estado == 'Pendiente' %}selected{% endif %}>Pendiente</option>
+            </select>
+        </div>
 
         <div class="actions">
             <button type="submit">{{ accion }}</button>
-            <a href="{{ url_for('mysql_facturas') }}">Cancelar</a>
+            <a class="btn btn-ghost" href="{{ url_for('mysql_facturas') }}">Cancelar</a>
         </div>
     </form>
 </section>

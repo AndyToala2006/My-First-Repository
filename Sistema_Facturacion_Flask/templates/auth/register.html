@@ -4,18 +4,24 @@
 <section class="panel form-panel">
     <h2>Registro de usuario</h2>
     <form method="post" class="form-grid">
-        <label for="nombre">Nombre</label>
-        <input id="nombre" name="nombre" type="text" value="{{ form.nombre }}" required>
+        <div class="field">
+            <label for="nombre">Nombre</label>
+            <input id="nombre" name="nombre" type="text" value="{{ form.nombre }}" required>
+        </div>
 
-        <label for="email">Email</label>
-        <input id="email" name="email" type="email" value="{{ form.email }}" required>
+        <div class="field">
+            <label for="email">Email</label>
+            <input id="email" name="email" type="email" value="{{ form.email }}" required>
+        </div>
 
-        <label for="password">Contraseña</label>
-        <input id="password" name="password" type="password" required>
+        <div class="field">
+            <label for="password">Contraseña</label>
+            <input id="password" name="password" type="password" required>
+        </div>
 
         <div class="actions">
             <button type="submit">Registrar</button>
-            <a href="{{ url_for('login') }}">Ya tengo cuenta</a>
+            <a class="btn btn-ghost" href="{{ url_for('login') }}">Ya tengo cuenta</a>
         </div>
     </form>
 </section>
