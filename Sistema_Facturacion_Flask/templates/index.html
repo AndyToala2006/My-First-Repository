@@ -1,12 +1,12 @@
-{% extends "base.html" %}
+ï»¿{% extends "base.html" %}
 
 {% block content %}
 <section class="panel highlight">
     <div class="panel-head">
         <div class="panel-title">
-            <span class="pill">Misión crítica</span>
+            <span class="pill">MisiÃ³n crÃ­tica</span>
             <h2>Centro de control operativo</h2>
-            <p class="muted">Prioriza la emisión de facturas y la salud del inventario en un solo flujo de trabajo.</p>
+            <p class="muted">Prioriza la emisiÃ³n de facturas y la salud del inventario en un solo flujo de trabajo.</p>
         </div>
         <div class="actions">
             <a class="btn" href="{{ url_for('factura_nueva') }}">Emitir factura</a>
@@ -20,12 +20,12 @@
     <article class="stat-card">
         <h3>Facturas emitidas</h3>
         <p class="metric">{{ total_facturas }}</p>
-        <span class="muted">Último corte: hoy</span>
+        <span class="muted">Ãšltimo corte: hoy</span>
     </article>
     <article class="stat-card">
         <h3>Cajas exportadas</h3>
         <p class="metric">{{ total_cajas }}</p>
-        <span class="muted">Balance logístico</span>
+        <span class="muted">Balance logÃ­stico</span>
     </article>
     <article class="stat-card">
         <h3>Total facturado</h3>
@@ -54,14 +54,14 @@
 
 <section class="panel">
     <div class="panel-head">
-        <h2>Últimas facturas registradas</h2>
+        <h2>Ãšltimas facturas registradas</h2>
         <a class="btn btn-ghost" href="{{ url_for('facturas') }}">Ver todas</a>
     </div>
     <div class="table-wrap">
         <table>
             <thead>
                 <tr>
-                    <th>Número</th>
+                    <th>NÃºmero</th>
                     <th>Fecha</th>
                     <th>Cliente</th>
                     <th>Destino</th>
@@ -91,13 +91,13 @@
 
 <section class="panel alt">
     <div class="panel-head">
-        <h2>Accesos rápidos inteligentes</h2>
-        <span class="muted">Salta directo a los puntos más importantes.</span>
+        <h2>Accesos rÃ¡pidos inteligentes</h2>
+        <span class="muted">Salta directo a los puntos mÃ¡s importantes.</span>
     </div>
     <div class="action-grid">
         <a class="link-card" href="{{ url_for('factura_nueva') }}">
             <strong>Registrar nueva factura</strong>
-            <span>Flujo crítico de ingresos y exportación.</span>
+            <span>Flujo crÃ­tico de ingresos y exportaciÃ³n.</span>
         </a>
         <a class="link-card" href="{{ url_for('productos_list') }}">
             <strong>Inventario y precios</strong>
