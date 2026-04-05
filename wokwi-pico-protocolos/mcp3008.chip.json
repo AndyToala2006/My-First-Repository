@@ -1,0 +1,22 @@
+{
+  "name": "MCP3008 (Sim)",
+  "author": "Codex",
+  "pins": [
+    "CH0",
+    "CH1",
+    "CH2",
+    "CH3",
+    "CH4",
+    "CH5",
+    "CH6",
+    "CH7",
+    "VDD",
+    "VREF",
+    "AGND",
+    "CLK",
+    "DOUT",
+    "DIN",
+    "CS",
+    "DGND"
+  ]
+}

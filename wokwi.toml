@@ -1,0 +1,6 @@
+[wokwi]
+version = 1
+
+[[project]]
+name = "pico-protocolos"
+path = "wokwi-pico-protocolos"

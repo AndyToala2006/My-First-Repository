@@ -1,0 +1,34 @@
+{
+  "version": 1,
+  "author": "Codex",
+  "editor": "wokwi",
+  "parts": [
+    { "type": "wokwi-pi-pico", "id": "pico", "top": -15.2, "left": -22.0, "attrs": {} },
+    { "type": "wokwi-lcd1602", "id": "lcd1", "top": -93.6, "left": 245.6, "attrs": { "pins": "i2c" } },
+    { "type": "wokwi-potentiometer", "id": "pot1", "top": 110.4, "left": 264.0, "rotate": 90, "attrs": {} },
+    { "type": "chip-mcp3008", "id": "adc1", "top": 96.0, "left": 79.2, "attrs": {} }
+  ],
+  "connections": [
+    [ "pico:GP0", "$serialMonitor:RX", "", [] ],
+    [ "pico:GP1", "$serialMonitor:TX", "", [] ],
+
+    [ "lcd1:GND", "pico:GND.2", "black", [] ],
+    [ "lcd1:VCC", "pico:3V3", "red", [] ],
+    [ "lcd1:SDA", "pico:GP4", "green", [] ],
+    [ "lcd1:SCL", "pico:GP5", "blue", [] ],
+
+    [ "pot1:VCC", "pico:3V3", "red", [] ],
+    [ "pot1:GND", "pico:GND.3", "black", [] ],
+    [ "pot1:SIG", "adc1:CH0", "orange", [] ],
+
+    [ "adc1:VDD", "pico:3V3", "red", [] ],
+    [ "adc1:VREF", "pico:3V3", "red", [] ],
+    [ "adc1:AGND", "pico:GND.4", "black", [] ],
+    [ "adc1:DGND", "pico:GND.5", "black", [] ],
+    [ "adc1:CLK", "pico:GP18", "gold", [] ],
+    [ "adc1:DOUT", "pico:GP16", "blue", [] ],
+    [ "adc1:DIN", "pico:GP19", "violet", [] ],
+    [ "adc1:CS", "pico:GP17", "orange", [] ]
+  ],
+  "dependencies": {}
+}
