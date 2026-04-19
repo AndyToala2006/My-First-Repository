@@ -1,6 +1,6 @@
 [wokwi]
 version = 1
-
-[[project]]
-name = "pico-protocolos"
-path = "wokwi-pico-protocolos"
+# Put a Pico MicroPython UF2 here and keep the forward slashes
+firmware = 'wokwi-pico-protocolos/firmware.uf2'
+# Optional: enable serial forwarding for mpremote
+rfc2217ServerPort = 4000

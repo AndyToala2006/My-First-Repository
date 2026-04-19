@@ -25,7 +25,7 @@ static uint16_t read_channel0(chip_state_t *state) {
   return clamp_u16(raw);
 }
 
-static void spi_done(void *user_data, spi_dev_t spi, uint8_t *buffer, uint32_t count) {
+static void spi_done(void *user_data, uint8_t *buffer, uint32_t count) {
   chip_state_t *state = (chip_state_t *)user_data;
   // If CS is still low and the master continues clocking, keep sending data.
   if (pin_read(state->cs) == LOW) {
@@ -69,5 +69,10 @@ void chip_init(void) {
   };
   state->spi = spi_init(&cfg);
 
-  pin_watch(state->cs, cs_changed, state);
+  const pin_watch_config_t watch_config = {
+    .edge = BOTH,
+    .pin_change = cs_changed,
+    .user_data = state,
+  };
+  pin_watch(state->cs, &watch_config);
 }

@@ -30,5 +30,8 @@
     [ "adc1:DIN", "pico:GP19", "violet", [] ],
     [ "adc1:CS", "pico:GP17", "orange", [] ]
   ],
+  "serialMonitor": {
+    "display": "always"
+  },
   "dependencies": {}
 }

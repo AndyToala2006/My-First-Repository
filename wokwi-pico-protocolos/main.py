@@ -8,8 +8,24 @@ cs = Pin(17, Pin.OUT, value=1)
 
 # ---- I2C (LCD 16x2) ----
 i2c = I2C(0, sda=Pin(4), scl=Pin(5), freq=400_000)
-LCD_ADDR = 0x27
-lcd = I2cLcd(i2c, LCD_ADDR, 2, 16)
+
+# Auto-detect LCD I2C address (commonly 0x27 or 0x3F)
+_scan = i2c.scan()
+print("I2C scan:", _scan)
+if 0x27 in _scan:
+    LCD_ADDR = 0x27
+elif 0x3F in _scan:
+    LCD_ADDR = 0x3F
+else:
+    LCD_ADDR = _scan[0] if _scan else 0x27
+
+print("LCD_ADDR:", hex(LCD_ADDR))
+
+lcd = None
+try:
+    lcd = I2cLcd(i2c, LCD_ADDR, 2, 16)
+except Exception as e:
+    print("LCD init failed:", e)
 
 # ---- UART (Serial Monitor) ----
 uart = UART(0, baudrate=115200, tx=Pin(0), rx=Pin(1))
@@ -43,6 +59,8 @@ def handle_uart():
 
 
 def lcd_write(line1, line2):
+    if lcd is None:
+        return
     lcd.move_to(0, 0)
     lcd.putstr((line1 + " " * 16)[:16])
     lcd.move_to(0, 1)
