@@ -1,7 +1,0 @@
-﻿{
-  "python.defaultInterpreterPath": "${workspaceFolder}\\Sistema_Facturacion_Flask\\venv\\Scripts\\python.exe",
-  "python.terminal.activateEnvironment": true,
-  "python.analysis.extraPaths": [
-    "${workspaceFolder}\\Sistema_Facturacion_Flask"
-  ]
-}

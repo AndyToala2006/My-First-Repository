@@ -1,2 +1,31 @@
+# ───────────── Python ─────────────
+venv/
+.venv/
+env/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+
+# ───────── Variables de entorno / secretos ─────────
+.env
+*.env
+!.env.example
+
+# ───────────── .NET / C# ─────────────
 bin/
 obj/
+*.user
+
+# ───────────── Java ─────────────
+*.class
+
+# ───────── IDEs y editores ─────────
+.idea/
+.vs/
+.vscode/
+
+# ───────── Sistema operativo ─────────
+.DS_Store
+Thumbs.db
+desktop.ini
